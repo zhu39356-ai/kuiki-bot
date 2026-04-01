@@ -58,7 +58,7 @@ def webhook():
     
     if text == "/start":
         reply = "你好！我是小葵🌻，你的專屬客服助手！\n\n直接輸入問題我就會回答，例如：\n• 主播投訴怎麼處理？\n• 週補貼活動規則是什麼？\n• 用戶態度很差怎麼應對？\n\n輸入 /查詢 用戶ID 可以查詢用戶活動狀態"
-    elif text.startswith("/查詢"):
+    elif text.startswith("/query"):
         parts = text.split()
         if len(parts) < 2:
             reply = "請輸入用戶ID，例如：/查詢 U123456"
