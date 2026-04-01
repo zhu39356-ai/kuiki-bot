@@ -1,10 +1,7 @@
 import os
 import requests
-from flask import Flask, request, Response
-import google.generativeai as genai
-from telegram import Update, Bot
+from flask import Flask, request
 import asyncio
-import json
 
 TG_TOKEN = os.environ.get("TG_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_KEY")
@@ -12,11 +9,17 @@ GS_URL = os.environ.get("GS_URL")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 app = Flask(__name__)
-bot = Bot(token=TG_TOKEN)
 
 SYSTEM_PROMPT = """你是「小葵」，一個專屬於博奕平台客服團隊的 AI 助手。
 你的工作是幫助客服人員快速解決工作上遇到的問題。
 回覆風格：繁體中文，條理清晰，步驟用①②③列出，話術範本用【範本】標記，簡潔專業像資深同事。"""
+
+def send_message(chat_id, text):
+    requests.post(
+        f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+        json={"chat_id": chat_id, "text": text},
+        timeout=10
+    )
 
 def ask_gemini(question):
     try:
@@ -27,7 +30,7 @@ def ask_gemini(question):
         )
         data = res.json()
         return data["candidates"][0]["content"]["parts"][0]["text"]
-    except:
+    except Exception as e:
         return "⚠️ 小葵暫時無法回答，請稍後再試"
 
 def query_user(uid):
@@ -50,30 +53,44 @@ def query_user(uid):
 @app.route(f"/{TG_TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json()
-    if "message" not in data:
+    if not data or "message" not in data:
         return "ok"
     
     chat_id = data["message"]["chat"]["id"]
     text = data["message"].get("text", "")
     
     if text == "/start":
-        reply = "你好！我是小葵🌻，你的專屬客服助手！\n\n直接輸入問題我就會回答，例如：\n• 主播投訴怎麼處理？\n• 週補貼活動規則是什麼？\n• 用戶態度很差怎麼應對？\n\n輸入 /查詢 用戶ID 可以查詢用戶活動狀態"
+        reply = (
+            "你好！我是小葵🌻，你的專屬客服助手！\n\n"
+            "直接輸入問題我就會回答，例如：\n"
+            "• 主播投訴怎麼處理？\n"
+            "• 週補貼活動規則是什麼？\n"
+            "• 用戶態度很差怎麼應對？\n\n"
+            "輸入 /query 用戶ID 可以查詢用戶活動狀態\n"
+            "例如：/query U123456"
+        )
     elif text.startswith("/query"):
         parts = text.split()
         if len(parts) < 2:
-            reply = "請輸入用戶ID，例如：/查詢 U123456"
+            reply = "請輸入用戶ID，例如：/query U123456"
         else:
             reply = query_user(parts[1])
+    elif text.startswith("/"):
+        reply = "未知指令，直接輸入問題就好 😊"
     else:
         reply = ask_gemini(text)
     
-    asyncio.run(bot.send_message(chat_id=chat_id, text=reply))
+    send_message(chat_id, reply)
     return "ok"
 
 @app.route("/set_webhook")
 def set_webhook():
-    asyncio.run(bot.set_webhook(f"{WEBHOOK_URL}/{TG_TOKEN}"))
-    return "Webhook set!"
+    url = f"{WEBHOOK_URL}/{TG_TOKEN}"
+    res = requests.post(
+        f"https://api.telegram.org/bot{TG_TOKEN}/setWebhook",
+        json={"url": url}
+    )
+    return f"Webhook set: {res.json()}"
 
 @app.route("/")
 def index():
@@ -82,10 +99,4 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-```
 
-同時更新 `requirements.txt`：
-```
-python-telegram-bot==20.7
-requests==2.31.0
-flask==3.0.0
