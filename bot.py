@@ -42,7 +42,6 @@ def send_message(chat_id, text):
     )
 
 def ask_gemini(question):
-    return "測試回話～ 😊"
     try:
         system = get_knowledge()
         res = requests.post(
