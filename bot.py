@@ -45,7 +45,7 @@ def ask_gemini(question):
 
         system = get_knowledge()
         res = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash?key={GEMINI_KEY}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
             json={"contents": [{"role": "user", "parts": [{"text": system + "\n\n用户问题：" + question}]}]},
             timeout=30
         )
