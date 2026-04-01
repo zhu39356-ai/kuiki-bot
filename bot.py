@@ -42,8 +42,8 @@ def send_message(chat_id, text):
     )
 
 def ask_gemini(question):
+    return "測試回話～ 😊"
     try:
-        return "測試回話～ 😊"
         system = get_knowledge()
         res = requests.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key={GEMINI_KEY}",
