@@ -50,7 +50,7 @@ def ask_gemini(question):
             timeout=30
         )
         data = res.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        return "這是測試喔～～"
 
 
 def query_user(uid):
