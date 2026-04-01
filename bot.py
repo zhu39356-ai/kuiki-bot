@@ -43,7 +43,6 @@ def send_message(chat_id, text):
 
 def ask_gemini(question):
 
-    try:
         system = get_knowledge()
         res = requests.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash?key={GEMINI_KEY}",
@@ -52,8 +51,6 @@ def ask_gemini(question):
         )
         data = res.json()
         return data["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception as e:
-        return "小葵暂时无法回答，请稍后再试 😊"
 
 
 def query_user(uid):
