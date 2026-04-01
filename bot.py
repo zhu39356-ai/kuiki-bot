@@ -43,15 +43,17 @@ def send_message(chat_id, text):
 
 def ask_gemini(question):
 
+    try:
         system = get_knowledge()
         res = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key={GEMINI_KEY}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash?key={GEMINI_KEY}",
             json={"contents": [{"role": "user", "parts": [{"text": system + "\n\n用户问题：" + question}]}]},
             timeout=30
         )
         data = res.json()
-
-        return "這是測試喔～～"
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        return "小葵暂时无法回答，请稍后再试 😊"
 
 
 def query_user(uid):
